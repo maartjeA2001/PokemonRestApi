@@ -10,10 +10,15 @@ namespace PokemonRestApi.Controllers
     [ApiController]
     public class PokemonController : ControllerBase
     {
-        [HttpPost("api/pokemon")]
-        public ActionResult<PokemonResponse> Get(FilterModel filter)
+        private readonly IPokemonRepository repository;
+
+        public PokemonController(IPokemonRepository repository)
         {
-            return new PokemonResponse();
+            this.repository = repository;
         }
+
+        [HttpPost("api/pokemon")]
+        public async Task<ActionResult<PokemonResponse>> Get(FilterModel filter)
+            => await repository.GetPokemonData(filter);
     }
 }
