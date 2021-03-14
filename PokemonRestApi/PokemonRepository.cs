@@ -36,15 +36,15 @@ namespace PokemonRestApi
             var pokemons = await GetPokemons(conn);
 
             var types = await GetTypeLookup(conn);
-
-
+            var baseStats = await GetBaseStatsLookup(conn);
+            var abilities = await GetAbilityLookup(conn);
 
             foreach (var p in pokemons)
             {
                 p.pokemonTypeIds = types[p.pokemonId].ToArray();
+                p.baseStats = baseStats[p.pokemonId];
+                p.abilities = abilities[p.pokemonId].ToArray();
             }
-
-            
 
             return new PokemonResponse
             {
@@ -64,6 +64,40 @@ namespace PokemonRestApi
             => (await conn.QueryAsync<(int pok_id, int type_id)>(@"
                 select pt.pok_id, pt.type_id from pokemon_types pt
             ")).ToLookup(pt => pt.pok_id, pt => pt.type_id);
+
+        private static async Task<Dictionary<int, BaseStats>> GetBaseStatsLookup(MySqlConnection conn)
+            => (await conn.QueryAsync<(int pok_id, int b_hp, int b_atk, int b_def, int b_sp_atk, int b_sp_def, int b_speed)>(@"
+                select
+                    pok_id
+                    , b_hp
+                    , b_atk
+                    , b_def
+                    , b_sp_atk
+                    , b_sp_def
+                    , b_speed
+                from base_stats
+            ")).ToDictionary(bs => bs.pok_id, bs => new BaseStats
+            {
+                hp = bs.b_hp,
+                atk = bs.b_atk,
+                def = bs.b_def,
+                spAtk = bs.b_sp_atk,
+                speed = bs.b_speed,
+            });
+
+        private static async Task<ILookup<int, Ability>> GetAbilityLookup(MySqlConnection conn)
+            => (await conn.QueryAsync<(int pok_id, bool is_hidden, string abil_name)>(@"
+                select
+                    pa.pok_id
+                    , pa.is_hidden
+                    , a.abil_name
+                from pokemon_abilities pa
+                join abilities a on a.abil_id = pa.abil_id
+            ")).ToLookup(a => a.pok_id, a => new Ability
+            {
+                abilityName = a.abil_name,
+                isHidden = a.is_hidden,
+            });
 
         private static async Task<Pokemon[]> GetPokemons(MySqlConnection conn)
             => (await conn.QueryAsync<Pokemon>(@"
