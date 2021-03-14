@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,7 +28,8 @@ namespace PokemonRestApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
-                .AddXmlSerializerFormatters();
+                .AddXmlSerializerFormatters()
+                .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
             services.AddSwaggerGen(c =>
             {

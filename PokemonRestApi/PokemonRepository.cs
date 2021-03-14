@@ -104,6 +104,17 @@ namespace PokemonRestApi
                 isHidden = a.is_hidden,
             });
 
+        static string GetOrderByColumn(SortOrder sortOrder)
+        {
+            var orderByColumn = sortOrder.Field switch
+            {
+                Field.Name => "p.pok_name",
+                Field.Atk => "bs.b_atk",
+                _ => "p.pok_id",
+            };
+            return sortOrder.Desending ? orderByColumn + " desc" : orderByColumn;
+        }
+
         private static async Task<Pokemon[]> GetPokemons(MySqlConnection conn, FilterModel filter)
         {
             var sql = @"
@@ -114,9 +125,10 @@ namespace PokemonRestApi
                     , p.pok_weight weight
                     , pok_base_experience baseExperience
                 from pokemon p
+                join base_stats bs on bs.pok_id = p.pok_id
                 where 1=1
                 ";
-            
+
             if (filter.CanHaveAbility.Length > 0)
             {
                 sql += @"and p.pok_id in (
@@ -128,7 +140,7 @@ namespace PokemonRestApi
             }
 
             sql += @"
-                order by p.pok_id
+                order by " + GetOrderByColumn(filter.Sort) + @"
                 limit @limit
             ";
             return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, limit = filter.Amount })).ToArray();
