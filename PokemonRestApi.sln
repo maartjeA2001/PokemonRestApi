@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokemonRestApi", "PokemonRestApi\PokemonRestApi.csproj", "{120D3EB4-F29F-49B6-A9AD-29CBAAC2AFF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokemonClient", "PokemonClient\PokemonClient.csproj", "{793B53F8-B8BB-4B84-8506-C778EBBD657E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokemonClient", "PokemonClient\PokemonClient.csproj", "{793B53F8-B8BB-4B84-8506-C778EBBD657E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokemonModels", "PokemonModels\PokemonModels.csproj", "{2E7C2A98-0BF2-4F83-91D0-7132513B5722}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{793B53F8-B8BB-4B84-8506-C778EBBD657E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{793B53F8-B8BB-4B84-8506-C778EBBD657E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{793B53F8-B8BB-4B84-8506-C778EBBD657E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E7C2A98-0BF2-4F83-91D0-7132513B5722}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E7C2A98-0BF2-4F83-91D0-7132513B5722}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E7C2A98-0BF2-4F83-91D0-7132513B5722}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E7C2A98-0BF2-4F83-91D0-7132513B5722}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
