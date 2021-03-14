@@ -5,9 +5,19 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
+<form @onsubmit="FetchPokemonData">
+    <label>Search ability: <input @bind="abilityName" class="form-control" /></label>
+    <label>Limit: <input @bind="limit" type="number" class="form-control" /></label>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
 @if (pokemonResponse == null)
 {
     <p><em>Loading...</em></p>
+}
+else if (pokemonResponse.Pokemons.Length == 0)
+{
+    <p>No results</p>
 }
 else
 {
@@ -36,11 +46,24 @@ else
 }
 
 @code {
+    int limit = 10;
+    string abilityName = "";
+
     private PokemonResponse? pokemonResponse;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Http.PostAsJsonAsync("api/pokemon", new FilterModel { Amount = 100 });
+        await FetchPokemonData();
+    }
+
+    async Task FetchPokemonData()
+    {
+        pokemonResponse = null;
+        var response = await Http.PostAsJsonAsync("api/pokemon", new FilterModel
+        {
+            Amount = limit,
+            CanHaveAbility = string.IsNullOrEmpty(abilityName) ? Array.Empty<string>() : new[] { abilityName },
+        });
         response.EnsureSuccessStatusCode();
         pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
     }
