@@ -45,6 +45,7 @@ namespace PokemonRestApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseWebAssemblyDebugging();
             }
 
             app.UseSwagger();
@@ -53,16 +54,15 @@ namespace PokemonRestApi
                 c.SwaggerEndpoint("v1/swagger.json", "Pokemon REST API V1");
             });
 
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapFallbackToFile("index.html");
             });
         }
     }
