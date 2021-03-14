@@ -85,6 +85,7 @@ namespace PokemonRestApi
                 atk = bs.b_atk,
                 def = bs.b_def,
                 spAtk = bs.b_sp_atk,
+                spDef = bs.b_sp_def,
                 speed = bs.b_speed,
             });
 
