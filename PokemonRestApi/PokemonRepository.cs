@@ -33,7 +33,7 @@ namespace PokemonRestApi
         {
             await using var conn = await OpenConnection();
 
-            var pokemons = await GetPokemons(conn);
+            var pokemons = await GetPokemons(conn, filter);
             var ids = pokemons.Select(p => p.pokemonId).ToArray();
 
             var types = await GetTypeLookup(conn, ids);
@@ -104,8 +104,9 @@ namespace PokemonRestApi
                 isHidden = a.is_hidden,
             });
 
-        private static async Task<Pokemon[]> GetPokemons(MySqlConnection conn)
-            => (await conn.QueryAsync<Pokemon>(@"
+        private static async Task<Pokemon[]> GetPokemons(MySqlConnection conn, FilterModel filter)
+        {
+            var sql = @"
                 select
                     p.pok_id pokemonId
                     , p.pok_name pokemonName
@@ -113,6 +114,24 @@ namespace PokemonRestApi
                     , p.pok_weight weight
                     , pok_base_experience baseExperience
                 from pokemon p
-            ")).ToArray();
+                where 1=1
+                ";
+            
+            if (filter.CanHaveAbility.Length > 0)
+            {
+                sql += @"and p.pok_id in (
+                    select pa.pok_id
+                    from pokemon_abilities pa
+                    join abilities a on a.abil_id = pa.abil_id
+                    where a.abil_name in @CanHaveAbility
+                    )";
+            }
+
+            sql += @"
+                order by p.pok_id
+                limit @limit
+            ";
+            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, limit = filter.Amount })).ToArray();
+        }
     }
 }
