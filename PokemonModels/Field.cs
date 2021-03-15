@@ -11,6 +11,6 @@
         Def,
         Sp_Atk,
         Sp_Def,
-        Spd,
+        Spd
     }
 }
