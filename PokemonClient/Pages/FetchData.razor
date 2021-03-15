@@ -10,7 +10,9 @@
     <label>Ability: <input @bind="abilityName" class="form-control" /></label>
     <label>Type: <input @bind="typeName" class="form-control" /></label>
     <label>Limit: <input @bind="limit" type="number" class="form-control" /></label>
-    <button type="submit" class="btn btn-primary">Search</button>
+    <p>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </p>
 </form>
 <table class="table">
     <thead>
@@ -27,17 +29,7 @@
         </tr>
     </thead>
     <tbody>
-    @if (pokemonResponse == null)
-    {
-        <div class="spinner-border" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    }
-    else if (pokemonResponse.Pokemons.Length == 0)
-    {
-        <p>No results</p>
-    }
-    else
+    @if (pokemonResponse != null)
     {
         var typeNames = pokemonResponse.Types.ToDictionary(t => t.typeId, t => t.typeName);
         @foreach (var pokemon in pokemonResponse.Pokemons)
@@ -58,10 +50,24 @@
     </tbody>
 </table>
 
+@if (isLoading)
+{
+<div class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+}
+else if (pokemonResponse.Pokemons.Length == 0)
+{
+    <p>No results</p>
+}
+
 @code {
-        int limit = 10;
-        string abilityName = "";
-        string typeName = "";
+    int limit = 10;
+    string abilityName = "";
+    string typeName = "";
+    bool isLoading = false;
 
     private PokemonResponse? pokemonResponse;
     private SortOrder sortOrder = new SortOrder { };
@@ -73,8 +79,7 @@
 
     async Task FetchPokemonData()
     {
-        pokemonResponse = null;
-
+        isLoading = true;
         var response = await Http.PostAsJsonAsync("api/pokemon", new FilterModel
         {
             Amount = limit,
@@ -83,7 +88,9 @@
             Sort = sortOrder
         }); ; ;
         response.EnsureSuccessStatusCode();
+
         pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
+        isLoading = false;
     }
 
     string ToUpper(string lowerString)
