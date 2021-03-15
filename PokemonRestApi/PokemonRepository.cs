@@ -159,7 +159,7 @@ namespace PokemonRestApi
                 order by " + GetOrderByColumn(filter.Sort) + @"
                 limit @limit
             ";
-            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasType, limit = filter.Amount })).ToArray();
+            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasType, limit = filter.Amount <= 0 ? 10 :filter.Amount })).ToArray();
         }
     }
 }
