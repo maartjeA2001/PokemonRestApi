@@ -6,8 +6,25 @@
 <p>This component demonstrates fetching data from the server.</p>
 
 <form @onsubmit="FetchPokemonData">
-    <label>Search ability: <input @bind="abilityName" class="form-control" /></label>
+    <p>Filters:</p>
+    <label>Ability: <input @bind="abilityName" class="form-control" /></label>
+    <label>Type: <input @bind="typeName" class="form-control" /></label>
     <label>Limit: <input @bind="limit" type="number" class="form-control" /></label>
+    <p>Sort options:</p>
+    <label>Sort on:</label> 
+    <select @bind="sortName" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
+        <option value="PokemonId">Pokemon id</option>
+        <option value="Name">Name</option>
+        <option value="Height">Height</option>
+        <option value="Weight">Weight</option>
+        <option value="Hp">Hp</option>
+        <option value="Atk">Attack</option>
+        <option value="Def">Defence</option>
+        <option value="Sp_Atk">Special attack</option>
+        <option value="Sp_Def">Special defence</option>
+        <option value="Spd">Speed</option>
+    </select>
+    <label>Descending:<input @bind="desc" type="checkbox" class="form-control" /> </label>
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
@@ -26,20 +43,31 @@ else
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Attack</th>
                 <th>Types</th>
-                <th>Ability</th>
+                <th>Abilities</th>
+                <th>Hp</th>
+                <th>Atk</th>
+                <th>Def</th>
+                <th>Sp Atk</th>
+                <th>Sp Def</th>
+                <th>Speed</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var pokemon in pokemonResponse.Pokemons)
             {
-                <tr>
-                    <td>@pokemon.pokemonName</td>
-                    <td>@pokemon.baseStats.atk</td>
-                    <td>@string.Join(", ", pokemon.pokemonTypeIds.Select(t => typeNames[t]))</td>
-                    <td>@string.Join(", ", @pokemon.abilities.Select(a => a.abilityName))</td>
-                </tr>
+            <tr>
+                <td>@ToUpper(pokemon.pokemonName)</td>
+
+                <td>@string.Join(", ", pokemon.pokemonTypeIds.Select(t => typeNames[t]))</td>
+                <td>@string.Join(", ", @pokemon.abilities.Select(a => a.abilityName))</td>
+                <td>@pokemon.baseStats.hp</td>
+                <td>@pokemon.baseStats.atk</td>
+                <td>@pokemon.baseStats.def</td>
+                <td>@pokemon.baseStats.spAtk</td>
+                <td>@pokemon.baseStats.spDef</td>
+                <td>@pokemon.baseStats.speed</td>
+            </tr>
             }
         </tbody>
     </table>
@@ -48,6 +76,9 @@ else
 @code {
     int limit = 10;
     string abilityName = "";
+    string typeName = "";
+    string sortName = "";
+    bool desc = false;
 
     private PokemonResponse? pokemonResponse;
 
@@ -59,12 +90,25 @@ else
     async Task FetchPokemonData()
     {
         pokemonResponse = null;
+
         var response = await Http.PostAsJsonAsync("api/pokemon", new FilterModel
         {
             Amount = limit,
             CanHaveAbility = string.IsNullOrEmpty(abilityName) ? Array.Empty<string>() : new[] { abilityName },
-        });
+            HasType = string.IsNullOrEmpty(typeName) ? Array.Empty<string>() : new[] { typeName },
+            Sort = new SortOrder
+            {
+
+                FieldName = !Enum.TryParse<Field>(sortName, out Field name) ? Field.PokemonId : Enum.Parse<Field>(sortName),
+                Descending = desc
+            }
+        }); ; ;
         response.EnsureSuccessStatusCode();
         pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
+    }
+
+    string ToUpper(string lowerString)
+    {
+        return char.ToUpper(lowerString[0]) + lowerString.Substring(1);
     }
 }

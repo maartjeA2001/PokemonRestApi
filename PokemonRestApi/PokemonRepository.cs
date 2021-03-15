@@ -106,13 +106,20 @@ namespace PokemonRestApi
 
         static string GetOrderByColumn(SortOrder sortOrder)
         {
-            var orderByColumn = sortOrder.Field switch
+            var orderByColumn = sortOrder.FieldName switch
             {
                 Field.Name => "p.pok_name",
+                Field.Height => "p.pok_Height",
+                Field.Weight => "p.pok_Weight",
+                Field.Hp => "bs.b_hp",
                 Field.Atk => "bs.b_atk",
+                Field.Def => "bs.b_def",
+                Field.Sp_Atk => "bs.b_sp_atk",
+                Field.Sp_Def => "bs.b_sp_def",
+                Field.Spd => "bs.b_speed",
                 _ => "p.pok_id",
             };
-            return sortOrder.Desending ? orderByColumn + " desc" : orderByColumn;
+            return sortOrder.Descending ? orderByColumn + " desc" : orderByColumn;
         }
 
         private static async Task<Pokemon[]> GetPokemons(MySqlConnection conn, FilterModel filter)
@@ -126,7 +133,7 @@ namespace PokemonRestApi
                     , pok_base_experience baseExperience
                 from pokemon p
                 join base_stats bs on bs.pok_id = p.pok_id
-                where 1=1
+                where 1=1 
                 ";
 
             if (filter.CanHaveAbility.Length > 0)
@@ -135,7 +142,16 @@ namespace PokemonRestApi
                     select pa.pok_id
                     from pokemon_abilities pa
                     join abilities a on a.abil_id = pa.abil_id
-                    where a.abil_name in @CanHaveAbility
+                    where a.abil_name in @CanHaveAbility 
+                    )";
+            }
+            if (filter.HasType.Length > 0)
+            {
+                sql += @"and p.pok_id in (
+                    select pt.pok_id
+                    from pokemon_types pt
+                    join types t on t.type_id = pt.type_id
+                    where t.type_name in @HasType 
                     )";
             }
 
@@ -143,7 +159,7 @@ namespace PokemonRestApi
                 order by " + GetOrderByColumn(filter.Sort) + @"
                 limit @limit
             ";
-            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, limit = filter.Amount })).ToArray();
+            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasType, limit = filter.Amount })).ToArray();
         }
     }
 }
