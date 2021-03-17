@@ -1,7 +1,7 @@
 ﻿@page "/fetchdata"
 @inject HttpClient Http
 
-<h1>Weather forecast</h1>
+<h1>Pokemon listings </h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
@@ -14,37 +14,66 @@
         <button type="submit" class="btn btn-primary">Search</button>
     </p>
 </form>
+<div class="form-check form-switch">
+    <input @bind="showId" type="checkbox">
+    <label> ID </label>
+    <input @bind="showTypes" type="checkbox">
+    <label> Types </label>
+    <input @bind="showAbil" type="checkbox">
+    <label> Abilities </label>
+    <input @bind="showHeight" type="checkbox">
+    <label> Height </label>
+    <input @bind="showWeight" type="checkbox">
+    <label> Weight </label>
+    <input @bind="showStats" type="checkbox">
+    <label> Stats </label>
+</div>
 <table class="table">
     <thead>
         <tr>
+            @if (showId){ <th><a @onclick="@(() => ChangeSortOrder("PokemonId"))">Id</a></th> }
+            
             <th><a @onclick="@(() => ChangeSortOrder("Name"))">Name</a></th>
-            <th>Types</th>
-            <th>Abilities</th>
-            <th @onclick="@(() => ChangeSortOrder("Hp"))">Hp</th>
-            <th @onclick="@(() => ChangeSortOrder("Atk"))">Atk</th>
-            <th @onclick="@(() => ChangeSortOrder("Def"))">Def</th>
-            <th @onclick="@(() => ChangeSortOrder("Sp_Atk"))">Sp Atk</th>
-            <th @onclick="@(() => ChangeSortOrder("Sp_Def"))">Sp Def</th>
-            <th @onclick="@(() => ChangeSortOrder("Spd"))">Speed</th>
+            @if (showTypes){ <th>Types</th> }
+            @if (showAbil){ <th>Abilities</th> }
+            @if (showHeight) { <th><a @onclick="@(() => ChangeSortOrder("Height"))">Height</a></th> }
+            @if (showWeight){ <th><a @onclick="@(() => ChangeSortOrder("Weight"))">Weight</a></th> }
+            @if(showStats)
+            { 
+                <th @onclick="@(() => ChangeSortOrder("Hp"))">Hp</th>
+                <th @onclick="@(() => ChangeSortOrder("Atk"))">Atk</th>
+                <th @onclick="@(() => ChangeSortOrder("Def"))">Def</th>
+                <th @onclick="@(() => ChangeSortOrder("Sp_Atk"))">Sp Atk</th>
+                <th @onclick="@(() => ChangeSortOrder("Sp_Def"))">Sp Def</th>
+                <th @onclick="@(() => ChangeSortOrder("Spd"))">Speed</th>
+            }
         </tr>
     </thead>
     <tbody>
     @if (pokemonResponse != null)
     {
-        var typeNames = pokemonResponse.Types.ToDictionary(t => t.typeId, t => t.typeName);
+            var typeNames = pokemonResponse.Types.ToDictionary(t => t.typeId, t => t.typeName);
         @foreach (var pokemon in pokemonResponse.Pokemons)
         {
-            <tr>
-                <td>@ToUpper(pokemon.pokemonName)</td>
-                <td>@string.Join(", ", pokemon.pokemonTypeIds.Select(t => typeNames[t]))</td>
-                <td>@string.Join(", ", @pokemon.abilities.Select(a => a.abilityName))</td>
+        <tr>
+            @if (showId){ <td>@pokemon.pokemonId</td> }
+
+            <td>@ToUpper(pokemon.pokemonName)</td>
+
+            @if (showTypes) { <td>@string.Join(", ", pokemon.pokemonTypeIds.Select(t => typeNames[t]))</td> }
+            @if (showAbil) { <td>@string.Join(", ", @pokemon.abilities.Select(a => a.abilityName))</td> }
+            @if (showHeight) { <td>@pokemon.height</td> }
+            @if (showWeight) { <td>@pokemon.weight</td> }
+            @if (showStats)
+            {
                 <td>@pokemon.baseStats.hp</td>
                 <td>@pokemon.baseStats.atk</td>
                 <td>@pokemon.baseStats.def</td>
                 <td>@pokemon.baseStats.spAtk</td>
                 <td>@pokemon.baseStats.spDef</td>
                 <td>@pokemon.baseStats.speed</td>
-            </tr>
+            }
+        </tr>
         }
     }
     </tbody>
@@ -64,6 +93,15 @@ else if (pokemonResponse.Pokemons.Length == 0)
 }
 
 @code {
+    bool showStats = true;
+    bool showTypes = true;
+    bool showId = true;
+    bool showHeight = true;
+    bool showWeight = true;
+    bool showAbil = true;
+
+
+
     int limit = 10;
     string abilityName = "";
     string typeName = "";
