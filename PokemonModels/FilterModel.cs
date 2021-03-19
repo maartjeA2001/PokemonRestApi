@@ -11,5 +11,6 @@ namespace Pokemon_REST_Api.Models
         public SortOrder Sort { get; set; } = new SortOrder();
         public string[] CanHaveAbility { get; set; } = Array.Empty<string>();
         public string[] HasType { get; set; } = Array.Empty<string>();
+        public int[] HasId { get; set; } = Array.Empty<int>();
     }
 }

@@ -11,6 +11,10 @@ namespace PokemonRestApi
     public interface IPokemonRepository
     {
         Task<PokemonResponse> GetPokemonData(FilterModel filter);
+
+        Task AddPokemonData(Pokemon pokemon);
+
+        Task DeletePokemonData(int id);
     }
 
     public class MySqlPokemonRepository : IPokemonRepository
@@ -28,6 +32,37 @@ namespace PokemonRestApi
             await conn.OpenAsync();
             return conn;
         }
+
+        public async Task DeletePokemonData(int pokId) 
+        {
+            await using var conn = await OpenConnection();
+
+            await conn.QueryAsync("Delete from pokemon where pok_id = @id; " +
+                "Delete from base_stats where pok_id = @id;" +
+                "Delete from pokemon_abilities where pok_id = @id;" +
+                "Delete from pokemon_types where pok_id = @id;", new { id = pokId });
+        }
+
+        public async Task AddPokemonData(Pokemon pokemon) 
+        {
+            await using var conn = await OpenConnection();
+
+            await conn.QueryAsync("insert into pokemon (pok_id, pok_name, pok_height, pok_weight, pok_base_experience) values(@id, @name , @height, @weight, @exp); " +
+                "insert into base_stats (pok_id, b_hp, b_atk, b_def, b_sp_atk, b_sp_def, b_speed) VALUES(@id, @b_hp, @b_atk, @b_def, @b_sp_atk, @b_sp_def, @b_speed);"
+                , new { id = pokemon.pokemonId, name = pokemon.pokemonName, height = pokemon.height, weight = pokemon.weight, exp = pokemon.baseExperience
+                , b_hp = pokemon.baseStats.hp, b_atk = pokemon.baseStats.atk, b_def = pokemon.baseStats.def, b_sp_atk = pokemon.baseStats.spAtk, b_sp_def = pokemon.baseStats.spDef, b_speed = pokemon.baseStats.speed
+                });
+            foreach (Ability abil in pokemon.abilities) {
+                await conn.QueryAsync("insert into pokemon_abilities (pok_id, abil_id, is_hidden) values(@id, (select abil_id from abilities where abil_name Like @abilName) , @isHidden); ",
+                    new {id = pokemon.pokemonId, abilName = abil.abilityName, isHidden = (abil.isHidden ? 1 : 0) });
+            }
+            foreach (int typeId in pokemon.pokemonTypeIds)
+            {
+                await conn.QueryAsync("insert into pokemon_types (pok_id, type_id) values(@id, @typeId); ",
+                    new { id = pokemon.pokemonId, typeId = typeId});
+            }
+        }
+
 
         public async Task<PokemonResponse> GetPokemonData(FilterModel filter)
         {
@@ -133,8 +168,7 @@ namespace PokemonRestApi
                     , pok_base_experience baseExperience
                 from pokemon p
                 join base_stats bs on bs.pok_id = p.pok_id
-                where 1=1 
-                ";
+                where 1=1 ";
 
             if (filter.CanHaveAbility.Length > 0)
             {
@@ -143,7 +177,7 @@ namespace PokemonRestApi
                     from pokemon_abilities pa
                     join abilities a on a.abil_id = pa.abil_id
                     where a.abil_name in @CanHaveAbility 
-                    )";
+                    ) ";
             }
             if (filter.HasType.Length > 0)
             {
@@ -152,14 +186,19 @@ namespace PokemonRestApi
                     from pokemon_types pt
                     join types t on t.type_id = pt.type_id
                     where t.type_name in @HasType 
-                    )";
+                    ) ";
+            }
+
+            if (filter.HasId.Length > 0)
+            {
+                sql += @"and p.pok_id in @HasId ";
             }
 
             sql += @"
                 order by " + GetOrderByColumn(filter.Sort) + @"
                 limit @limit
             ";
-            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasType, limit = filter.Amount <= 0 ? 10 :filter.Amount })).ToArray();
+            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasType, limit = filter.Amount <= 0 ? 10 :filter.Amount, Hasid = filter.HasId })).ToArray();
         }
     }
 }

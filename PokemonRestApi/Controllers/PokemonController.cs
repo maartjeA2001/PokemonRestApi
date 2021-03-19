@@ -18,7 +18,24 @@ namespace PokemonRestApi.Controllers
         }
 
         [HttpPost("api/pokemon")]
-        public async Task<ActionResult<PokemonResponse>> Get(FilterModel filter)
+        public async Task<ActionResult<PokemonResponse>> GetByFilter(FilterModel filter)
             => await repository.GetPokemonData(filter);
+
+        [HttpGet("api/pokemon/{id:int}")]
+        public async Task<ActionResult<PokemonResponse>> Get(int id)
+        {
+            FilterModel filter = new FilterModel { HasId = new int[] { id } };
+            return await repository.GetPokemonData(filter);
+        }
+
+        [HttpPut("api/pokemon")]
+        public async Task Add(Pokemon pokemon)
+            => await repository.AddPokemonData(pokemon);
+        
+
+        
+        [HttpDelete("api/pokemon/{id:int}")]
+        public async Task Delete(int id)
+            => await repository.DeletePokemonData(id);
     }
 }
