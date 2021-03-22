@@ -12,9 +12,10 @@ namespace PokemonRestApi
     {
         Task<PokemonResponse> GetPokemonData(FilterModel filter);
 
-        Task AddPokemonData(Pokemon pokemon);
+        Task UpdateOrAddPokemonData(Pokemon pokemon);
 
         Task DeletePokemonData(int id);
+
     }
 
     public class MySqlPokemonRepository : IPokemonRepository
@@ -61,6 +62,53 @@ namespace PokemonRestApi
                 await conn.QueryAsync("insert into pokemon_types (pok_id, type_id) values(@id, @typeId); ",
                     new { id = pokemon.pokemonId, typeId = typeId});
             }
+        }
+
+        public async Task UpdatePokemonData(Pokemon pokemon)
+        {
+            await using var conn = await OpenConnection();
+
+            await conn.QueryAsync("update pokemon set pok_name=@name , pok_height=@height , pok_weight=@weight , pok_base_experience=@exp where pok_id = @id; " +
+                "update base_stats set b_hp=@b_hp, b_atk=@b_atk, b_def=@b_def, b_sp_atk=@b_sp_atk, b_sp_def=@b_sp_def, b_speed=@b_speed where pok_id = @id;"
+                , new
+                {
+                    id = pokemon.pokemonId,
+                    name = pokemon.pokemonName,
+                    height = pokemon.height,
+                    weight = pokemon.weight,
+                    exp = pokemon.baseExperience,
+
+                    b_hp = pokemon.baseStats.hp,
+                    b_atk = pokemon.baseStats.atk,
+                    b_def = pokemon.baseStats.def,
+                    b_sp_atk = pokemon.baseStats.spAtk,
+                    b_sp_def = pokemon.baseStats.spDef,
+                    b_speed = pokemon.baseStats.speed
+                });
+            foreach (Ability abil in pokemon.abilities)
+            {
+                await conn.QueryAsync("update pokemon_abilities set abil_id=(select abil_id from abilities where abil_name Like @abilName), is_hidden=@isHidden where pok_id = @id; ",
+                    new { id = pokemon.pokemonId, abilName = abil.abilityName, isHidden = (abil.isHidden ? 1 : 0) });
+            }
+            foreach (int typeId in pokemon.pokemonTypeIds)
+            {
+                await conn.QueryAsync("update pokemon_types set type_id=@typeId where pok_id = @id; ",
+                    new { id = pokemon.pokemonId, typeId = typeId });
+            }
+        }
+
+        public async Task UpdateOrAddPokemonData(Pokemon pokemon) 
+        {
+            await using var conn = await OpenConnection();
+            var count = await conn.ExecuteScalarAsync<int>(@"
+                select count(*)
+                from pokemon
+                where pok_id=@id
+            ", new {id = pokemon.pokemonId } );
+            if (count > 0)
+                await UpdatePokemonData(pokemon);
+            else
+                await AddPokemonData(pokemon);
         }
 
 

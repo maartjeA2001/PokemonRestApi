@@ -29,10 +29,8 @@ namespace PokemonRestApi.Controllers
         }
 
         [HttpPut("api/pokemon")]
-        public async Task Add(Pokemon pokemon)
-            => await repository.AddPokemonData(pokemon);
-        
-
+        public async Task updateOrAdd(Pokemon pokemon)
+            => await repository.UpdateOrAddPokemonData(pokemon);
         
         [HttpDelete("api/pokemon/{id:int}")]
         public async Task Delete(int id)
