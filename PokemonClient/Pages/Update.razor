@@ -1,0 +1,52 @@
+﻿@page "/updatePokemon/{Id:int?}"
+@inject HttpClient Http
+
+<h1>Update a pokemon</h1>
+
+<form @onsubmit="FetchPokemonData">
+    <label>Id: <input @bind="Id" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </p>
+</form>
+@if (pokemonResponse != null)
+{
+<form @onsubmit="UpdatePokemon">
+    <label>Name: <input @bind="pokemonResponse.Pokemons[0].pokemonName" class="form-control" /></label>
+    <label>Height: <input @bind="pokemonResponse.Pokemons[0].height" type="number" class="form-control" /></label>
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
+}
+    @code {
+        bool isLoading = false;
+        private PokemonResponse? pokemonResponse;
+
+        [Parameter]
+        public int Id { get; set; }
+
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (Id > 0)
+            {
+                isLoading = true;
+                await FetchPokemonData();
+            }
+        }
+
+        async Task FetchPokemonData()
+        {
+            var response = await Http.GetAsync("api/pokemon/" + Id);
+            response.EnsureSuccessStatusCode();
+
+            pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
+            isLoading = false;
+        }
+
+        async Task UpdatePokemon()
+        {
+            var response = await Http.PutAsJsonAsync("api/pokemon", pokemonResponse.Pokemons[0]);
+            response.EnsureSuccessStatusCode();
+            isLoading = false;
+        }
+}
