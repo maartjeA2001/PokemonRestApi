@@ -15,28 +15,20 @@ namespace PokemonRestApi
         Task UpdateOrAddPokemonData(Pokemon pokemon);
 
         Task DeletePokemonData(int id);
-
     }
 
     public class MySqlPokemonRepository : IPokemonRepository
     {
-        readonly string connectionString;
+        private MySqlConnecter connection;
 
-        public MySqlPokemonRepository(string connectionString)
+        public MySqlPokemonRepository(MySqlConnecter connection)
         {
-            this.connectionString = connectionString;
-        }
-
-        async Task<MySqlConnection> OpenConnection()
-        {
-            var conn = new MySqlConnection(connectionString);
-            await conn.OpenAsync();
-            return conn;
+            this.connection = connection;
         }
 
         public async Task DeletePokemonData(int pokId) 
         {
-            await using var conn = await OpenConnection();
+            await using var conn = await connection.OpenConnection();
 
             await conn.QueryAsync("Delete from pokemon where pok_id = @id; " +
                 "Delete from base_stats where pok_id = @id;" +
@@ -46,7 +38,7 @@ namespace PokemonRestApi
 
         public async Task AddPokemonData(Pokemon pokemon) 
         {
-            await using var conn = await OpenConnection();
+            await using var conn = await connection.OpenConnection();
 
             await conn.QueryAsync("insert into pokemon (pok_id, pok_name, pok_height, pok_weight, pok_base_experience) values(@id, @name , @height, @weight, @exp); " +
                 "insert into base_stats (pok_id, b_hp, b_atk, b_def, b_sp_atk, b_sp_def, b_speed) VALUES(@id, @b_hp, @b_atk, @b_def, @b_sp_atk, @b_sp_def, @b_speed);"
@@ -66,7 +58,7 @@ namespace PokemonRestApi
 
         public async Task UpdatePokemonData(Pokemon pokemon)
         {
-            await using var conn = await OpenConnection();
+            await using var conn = await connection.OpenConnection();
 
             await conn.QueryAsync("update pokemon set pok_name=@name , pok_height=@height , pok_weight=@weight , pok_base_experience=@exp where pok_id = @id; " +
                 "update base_stats set b_hp=@b_hp, b_atk=@b_atk, b_def=@b_def, b_sp_atk=@b_sp_atk, b_sp_def=@b_sp_def, b_speed=@b_speed where pok_id = @id;"
@@ -87,8 +79,8 @@ namespace PokemonRestApi
                 });
             foreach (Ability abil in pokemon.abilities)
             {
-                await conn.QueryAsync("update pokemon_abilities set abil_id=(select abil_id from abilities where abil_name Like @abilName), is_hidden=@isHidden where pok_id = @id; ",
-                    new { id = pokemon.pokemonId, abilName = abil.abilityName, isHidden = (abil.isHidden ? 1 : 0) });
+                await conn.QueryAsync("update pokemon_abilities set abil_id=@abilId, is_hidden=@isHidden where pok_id = @id; ",
+                    new { id = pokemon.pokemonId, abilId = abil.abilityId, isHidden = (abil.isHidden ? 1 : 0) });
             }
             foreach (int typeId in pokemon.pokemonTypeIds)
             {
@@ -99,7 +91,7 @@ namespace PokemonRestApi
 
         public async Task UpdateOrAddPokemonData(Pokemon pokemon) 
         {
-            await using var conn = await OpenConnection();
+            await using var conn = await connection.OpenConnection();
             var count = await conn.ExecuteScalarAsync<int>(@"
                 select count(*)
                 from pokemon
@@ -111,10 +103,9 @@ namespace PokemonRestApi
                 await AddPokemonData(pokemon);
         }
 
-
         public async Task<PokemonResponse> GetPokemonData(FilterModel filter)
         {
-            await using var conn = await OpenConnection();
+            await using var conn = await connection.OpenConnection();
 
             var pokemons = await GetPokemons(conn, filter);
             var ids = pokemons.Select(p => p.pokemonId).ToArray();
@@ -137,8 +128,8 @@ namespace PokemonRestApi
             };
         }
 
-        private async Task<Pokemon_REST_Api.Models.Type[]> GetTypes(MySqlConnection conn)
-         => (await conn.QueryAsync<Pokemon_REST_Api.Models.Type>(@"
+        private async Task<PokemonType[]> GetTypes(MySqlConnection conn)
+         => (await conn.QueryAsync<PokemonType>(@"
                 select type_id typeId
                     ,type_name typeName
                 from types
@@ -173,16 +164,18 @@ namespace PokemonRestApi
             });
 
         private static async Task<ILookup<int, Ability>> GetAbilityLookup(MySqlConnection conn, int[] pokemonIds)
-            => (await conn.QueryAsync<(int pok_id, bool is_hidden, string abil_name)>(@"
+            => (await conn.QueryAsync<(int pok_id, int abil_id, string abil_name, bool is_hidden)>(@"
                 select
                     pa.pok_id
-                    , pa.is_hidden
+                    , a.abil_id
                     , a.abil_name
+                    , pa.is_hidden
                 from pokemon_abilities pa
                 join abilities a on a.abil_id = pa.abil_id
                 where pa.pok_id in @pokemonIds
             ", new { pokemonIds })).ToLookup(a => a.pok_id, a => new Ability
             {
+                abilityId = a.abil_id,
                 abilityName = a.abil_name,
                 isHidden = a.is_hidden,
             });
