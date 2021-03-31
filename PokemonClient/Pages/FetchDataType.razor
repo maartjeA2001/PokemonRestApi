@@ -1,0 +1,75 @@
+﻿@page "/fetchTypeData"
+@inject HttpClient Http
+
+<h1>Ability overview </h1>
+
+<p>A list of all the abilities in the database.</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ability id</th>
+            
+            <th>Ability name</th>
+            
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (types != null)
+        {
+            @foreach (var type in types)
+            {
+                <tr>
+                    <td> @type.typeId </td>
+                    <td> @type.typeName </td>
+                    <td><a class="btn btn-secondary btn-sm" href="updateType/@type.typeId"> Edit </a></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" @onclick="@(() => DeleteTypeData(type.typeId))"> Del </button></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (isLoading)
+{
+<div class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+}
+else if (types.Length == 0)
+{
+    <p>No results</p>
+}
+
+@code {
+    bool isLoading = false;
+
+    private PokemonType[]? types;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchTypeData();
+    }
+
+    async Task FetchTypeData()
+    {
+        isLoading = true;
+        var response = await Http.GetAsync("api/pokemonTypes");
+        response.EnsureSuccessStatusCode();
+
+        types = await response.Content.ReadFromJsonAsync<PokemonType[]>();
+        isLoading = false;
+    }
+
+    async Task DeleteTypeData(int Id)
+    {
+        isLoading = true;
+        var response = await Http.DeleteAsync("api/pokemonTypes/" + Id);
+        response.EnsureSuccessStatusCode();
+        await FetchTypeData();
+    }
+}

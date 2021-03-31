@@ -1,7 +1,7 @@
 ﻿@page "/updatePokemon/{Id:int?}"
 @inject HttpClient Http
 
-<h1>Update a pokemon</h1>
+<h1>Update/Add a pokemon</h1>
 
 <form @onsubmit="FetchPokemonData">
     <label>Id: <input @bind="Id" class="form-control" /></label>
@@ -9,44 +9,89 @@
         <button type="submit" class="btn btn-primary">Search</button>
     </p>
 </form>
-@if (pokemonResponse != null)
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+@if (pokemon !=null)
 {
 <form @onsubmit="UpdatePokemon">
-    <label>Name: <input @bind="pokemonResponse.Pokemons[0].pokemonName" class="form-control" /></label>
-    <label>Height: <input @bind="pokemonResponse.Pokemons[0].height" type="number" class="form-control" /></label>
-    <button type="submit" class="btn btn-primary">Update</button>
+    <label>Name: <input @bind="pokemon.pokemonName" class="form-control" /></label>
+    <label>Height: <input @bind="pokemon.height" type="number" class="form-control" /></label>
+    <label>Weight: <input @bind="pokemon.weight" type="number" class="form-control" /></label>
+    <label>Ability:
+        @for (int i = 0; i< pokemon.abilities.Length; i++)
+        {
+            var j = i;
+            <input @bind="pokemon.abilities[j].abilityId" type="number" class="form-control" />
+         }
+     </label>
+    <label>
+        Type: 
+        @for (int i = 0; i < pokemon.pokemonTypeIds.Length; i++)
+        {
+            var j = i;
+            <input @bind="pokemon.pokemonTypeIds[j]" type="number" class="form-control" />
+        }
+    </label>
+    <label>Base experience: <input @bind="pokemon.baseExperience" type="number" class="form-control" /></label>
+    <p>BaseStats:</p>
+    <label>Hp: <input @bind="pokemon.baseStats.hp" type="number" class="form-control" /></label>
+    <label>Atk: <input @bind="pokemon.baseStats.atk" type="number" class="form-control" /></label>
+    <label>Def: <input @bind="pokemon.baseStats.def" type="number" class="form-control" /></label>
+    <label>SpAtk: <input @bind="pokemon.baseStats.spAtk" type="number" class="form-control" /></label>
+    <label>SpDef:<input @bind="pokemon.baseStats.spDef" type="number" class="form-control" /></label>
+    <label>Speed: <input @bind="pokemon.baseStats.speed" type="number" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </p>
 </form>
 }
-    @code {
-        bool isLoading = false;
-        private PokemonResponse? pokemonResponse;
+@code {
+    bool isLoading = false;
+    private Pokemon ?pokemon;
 
-        [Parameter]
-        public int Id { get; set; }
+    [Parameter]
+    public int Id { get; set; }
 
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchPokemonData();
+    }
+
+    async Task FetchPokemonData()
+    {
+        if (Id > 0)
         {
-            if (Id > 0)
-            {
-                isLoading = true;
-                await FetchPokemonData();
-            }
-        }
-
-        async Task FetchPokemonData()
-        {
+            isLoading = true;
             var response = await Http.GetAsync("api/pokemon/" + Id);
             response.EnsureSuccessStatusCode();
 
-            pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
-            isLoading = false;
-        }
+            var pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
+            pokemon = (pokemonResponse.Pokemons.Length).Equals(0) ? new Pokemon { pokemonId = Id, abilities = new Ability[] { }, pokemonTypeIds = new int[] { 0, 0 } } : pokemonResponse.Pokemons[0];
+            if (pokemon.abilities.Length <= 1)
+            {
+                pokemon.abilities = new Ability[] { (pokemon.abilities.Length).Equals(1) ? pokemon.abilities[0] : new Ability { }, new Ability { } };
+            }
+            if (pokemon.pokemonTypeIds.Length <= 1)
+            {
+                pokemon.pokemonTypeIds = new int[] { pokemon.pokemonTypeIds.Length.Equals(1) ? pokemon.pokemonTypeIds[0] : 0, 0 };
+            }
 
-        async Task UpdatePokemon()
-        {
-            var response = await Http.PutAsJsonAsync("api/pokemon", pokemonResponse.Pokemons[0]);
-            response.EnsureSuccessStatusCode();
             isLoading = false;
         }
+    }
+
+    async Task UpdatePokemon()
+    {
+        var response = await Http.PutAsJsonAsync("api/pokemon", pokemon);
+        response.EnsureSuccessStatusCode();
+        isLoading = false;
+    }
 }

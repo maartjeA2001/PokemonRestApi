@@ -3,7 +3,7 @@
 
 <h1>Pokemon listings </h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+<p>A list of all Pokemon based on your filters, click on the table names to sort by specific attributes</p>
 
 <form @onsubmit="FetchPokemonData">
     <p>Filters:</p>
@@ -31,22 +31,24 @@
 <table class="table">
     <thead>
         <tr>
-            @if (showId){ <th><a @onclick="@(() => ChangeSortOrder("PokemonId"))">Id</a></th> }
+            @if (showId){ <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("PokemonId"))">Id</button></th> }
             
-            <th><a @onclick="@(() => ChangeSortOrder("Name"))">Name</a></th>
+            <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Name"))">Name</button></th>
             @if (showTypes){ <th>Types</th> }
             @if (showAbil){ <th>Abilities</th> }
-            @if (showHeight) { <th><a @onclick="@(() => ChangeSortOrder("Height"))">Height</a></th> }
-            @if (showWeight){ <th><a @onclick="@(() => ChangeSortOrder("Weight"))">Weight</a></th> }
+            @if (showHeight) { <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Height"))">Height</button></th> }
+            @if (showWeight){ <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Weight"))">Weight</button></th> }
             @if(showStats)
             { 
-                <th @onclick="@(() => ChangeSortOrder("Hp"))">Hp</th>
-                <th @onclick="@(() => ChangeSortOrder("Atk"))">Atk</th>
-                <th @onclick="@(() => ChangeSortOrder("Def"))">Def</th>
-                <th @onclick="@(() => ChangeSortOrder("Sp_Atk"))">Sp Atk</th>
-                <th @onclick="@(() => ChangeSortOrder("Sp_Def"))">Sp Def</th>
-                <th @onclick="@(() => ChangeSortOrder("Spd"))">Speed</th>
+                <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Hp"))">Hp</button></th>
+                <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Atk"))">Atk</button></th>
+                <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Def"))">Def</button></th>
+                <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Sp_Atk"))">Sp Atk</button></th>
+                <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Sp_Def"))">Sp Def</button></th>
+                <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Spd"))">Speed</button></th>
             }
+            <th></th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -58,7 +60,7 @@
         <tr>
             @if (showId){ <td>@pokemon.pokemonId</td> }
 
-            <td>@ToUpper(pokemon.pokemonName)</td>
+            <td>@pokemon.pokemonName</td>
 
             @if (showTypes) { <td>@string.Join(", ", pokemon.pokemonTypeIds.Select(t => typeNames[t]))</td> }
             @if (showAbil) { <td>@string.Join(", ", @pokemon.abilities.Select(a => a.abilityName))</td> }
@@ -73,6 +75,8 @@
                 <td>@pokemon.baseStats.spDef</td>
                 <td>@pokemon.baseStats.speed</td>
             }
+            <td><a class="btn btn-secondary btn-sm" href="updatePokemon/@pokemon.pokemonId"> Edit </a></td>
+            <td> <button type="button" class="btn btn-danger btn-sm" @onclick="@(() => DeletePokemonData(pokemon.pokemonId))"> Del </button></td>
         </tr>
         }
     }
@@ -99,8 +103,6 @@ else if (pokemonResponse.Pokemons.Length == 0)
     bool showHeight = true;
     bool showWeight = true;
     bool showAbil = true;
-
-
 
     int limit = 10;
     string abilityName = "";
@@ -131,9 +133,12 @@ else if (pokemonResponse.Pokemons.Length == 0)
         isLoading = false;
     }
 
-    string ToUpper(string lowerString)
+    async Task DeletePokemonData(int Id)
     {
-        return char.ToUpper(lowerString[0]) + lowerString.Substring(1);
+        isLoading = true;
+        var response = await Http.DeleteAsync("api/pokemon/" + Id);
+        response.EnsureSuccessStatusCode();
+        await FetchPokemonData();
     }
 
     private async Task ChangeSortOrder(string orderInput)
@@ -145,7 +150,6 @@ else if (pokemonResponse.Pokemons.Length == 0)
             sortOrder.FieldName = !Enum.TryParse<Field>(orderInput, out Field name) ? Field.PokemonId : Enum.Parse<Field>(orderInput);
             sortOrder.Descending = true;
         }
-
 
         await FetchPokemonData();
     }

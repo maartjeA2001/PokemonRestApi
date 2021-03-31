@@ -21,9 +21,9 @@ namespace PokemonRestApi
     {
         private MySqlConnecter connection;
 
-        public MySqlPokemonRepository(MySqlConnecter connection)
+        public MySqlPokemonRepository(string connectionString)
         {
-            this.connection = connection;
+            this.connection = new MySqlConnecter(connectionString);
         }
 
         public async Task DeletePokemonData(int pokId) 
@@ -46,12 +46,14 @@ namespace PokemonRestApi
                 , b_hp = pokemon.baseStats.hp, b_atk = pokemon.baseStats.atk, b_def = pokemon.baseStats.def, b_sp_atk = pokemon.baseStats.spAtk, b_sp_def = pokemon.baseStats.spDef, b_speed = pokemon.baseStats.speed
                 });
             foreach (Ability abil in pokemon.abilities) {
-                await conn.QueryAsync("insert into pokemon_abilities (pok_id, abil_id, is_hidden) values(@id, (select abil_id from abilities where abil_name Like @abilName) , @isHidden); ",
-                    new {id = pokemon.pokemonId, abilName = abil.abilityName, isHidden = (abil.isHidden ? 1 : 0) });
+                if (abil.abilityId > 0) 
+                await conn.QueryAsync("insert into pokemon_abilities (pok_id, abil_id, is_hidden) values(@id, @abilId , @isHidden); ",
+                    new {id = pokemon.pokemonId, abilId = abil.abilityId, isHidden = (abil.isHidden ? 1 : 0) });
             }
             foreach (int typeId in pokemon.pokemonTypeIds)
             {
-                await conn.QueryAsync("insert into pokemon_types (pok_id, type_id) values(@id, @typeId); ",
+                if (typeId > 0)
+                    await conn.QueryAsync("insert into pokemon_types (pok_id, type_id) values(@id, @typeId); ",
                     new { id = pokemon.pokemonId, typeId = typeId});
             }
         }
@@ -79,12 +81,14 @@ namespace PokemonRestApi
                 });
             foreach (Ability abil in pokemon.abilities)
             {
-                await conn.QueryAsync("update pokemon_abilities set abil_id=@abilId, is_hidden=@isHidden where pok_id = @id; ",
+                if (abil.abilityId > 0)
+                    await conn.QueryAsync("update pokemon_abilities set abil_id=@abilId, is_hidden=@isHidden where pok_id = @id; ",
                     new { id = pokemon.pokemonId, abilId = abil.abilityId, isHidden = (abil.isHidden ? 1 : 0) });
             }
             foreach (int typeId in pokemon.pokemonTypeIds)
             {
-                await conn.QueryAsync("update pokemon_types set type_id=@typeId where pok_id = @id; ",
+                if (typeId > 0)
+                    await conn.QueryAsync("update pokemon_types set type_id=@typeId where pok_id = @id; ",
                     new { id = pokemon.pokemonId, typeId = typeId });
             }
         }

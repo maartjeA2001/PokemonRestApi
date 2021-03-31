@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace PokemonRestApi
 {
-    public interface IAbililtyRepository
+    public interface IAbilityRepository
     {
-        Task<Ability[]> GetAbilityData();
+        Task<Ability[]> GetAbilityData(int id);
 
         Task UpdateOrAddAblityData(Ability ability);
 
         Task DeleteAbilityData(int id);
     }
 
-    public class MySqlAbilityRepository : IAbililtyRepository
+    public class MySqlAbilityRepository : IAbilityRepository
     {
         private MySqlConnecter connection;
 
@@ -37,38 +37,41 @@ namespace PokemonRestApi
         {
             await using var conn = await connection.OpenConnection();
 
-            await conn.QueryAsync("insert into ablities (abil_id, abil_name) values(@id, @name);"
+            await conn.QueryAsync("insert into abilities (abil_id, abil_name) values(@id, @name);"
                 , new { id = ability.abilityId, name = ability.abilityName});
         }
 
         public async Task UpdateAbilityData(Ability ability)
         {
             await using var conn = await connection.OpenConnection();
-            await conn.QueryAsync("update ablities set abil_name = @name"
-               , new { name = ability.abilityName });
+            await conn.QueryAsync("update abilities set abil_name = @name where abil_id = @abil"
+               , new { name = ability.abilityName , abil = ability.abilityId});
         }
 
         public async Task UpdateOrAddAblityData(Ability ability) 
         {
-            await using var conn = await connection.OpenConnection();
-            var count = await conn.ExecuteScalarAsync<int>(@"
+            if (ability.abilityId > 0)
+            {
+                await using var conn = await connection.OpenConnection();
+                var count = await conn.ExecuteScalarAsync<int>(@"
                 select count(*)
                 from abilities
-                where abil_id LIKE @abil
-            ", new {abil = ability.abilityName } );
-            if (count > 0)
-                await UpdateAbilityData(ability);
-            else
-                await AddAbilityData(ability);
+                where abil_id = @abil
+            ", new { abil = ability.abilityId });
+                if (count > 0)
+                    await UpdateAbilityData(ability);
+                else
+                    await AddAbilityData(ability);
+            }
         }
 
         public async Task<Ability[]> GetAbilityData(int id)
         {
             await using var conn = await connection.OpenConnection();
 
-            var sql = "select abil_id abilityId, abil_name abilityName from abilities";
+            var sql = "select abil_id abilityId, abil_name abilityName from abilities ";
 
-            if (id == 0)
+            if (id != 0)
                 sql += "where abil_id = @id";
 
             return (await conn.QueryAsync<Ability>(sql, new { id = id })).ToArray();

@@ -17,7 +17,7 @@ namespace PokemonRestApi.Controllers
             this.repository = repository;
         }
 
-        [HttpPost("api/abilities")]
+        [HttpGet("api/abilities")]
         public async Task<ActionResult<Ability[]>> GetAbilities()
             => await repository.GetAbilityData(0);
 
@@ -26,7 +26,6 @@ namespace PokemonRestApi.Controllers
         {
             return await repository.GetAbilityData(id);
         }
-
 
         [HttpPut("api/abilities")]
         public async Task updateOrAdd(Ability ability)

@@ -37,6 +37,8 @@ namespace PokemonRestApi
             });
 
             services.AddSingleton<IPokemonRepository>(sp => new MySqlPokemonRepository(configuration.GetConnectionString("PokemonApiData")));
+            services.AddSingleton<IAbilityRepository>(sp => new MySqlAbilityRepository(configuration.GetConnectionString("PokemonApiData")));
+            services.AddSingleton<ITypeRepository>(sp => new MySqlTypeRepository(configuration.GetConnectionString("PokemonApiData")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,66 @@
+﻿@page "/updateType/{Id:int?}"
+@inject HttpClient Http
+
+<h1>Update/Add a ability</h1>
+
+<form @onsubmit="FetchTypeData">
+    <label>Id: <input @bind="Id" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </p>
+</form>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+@if (types != null)
+{
+<form @onsubmit="UpdateAbility">
+    <label>Name: <input @bind="types[0].typeName" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </p>
+</form>
+}
+@code {
+    bool isLoading = false;
+    private PokemonType[] types;
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchTypeData();
+    }
+
+    async Task FetchTypeData()
+    {
+        if (Id > 0)
+        {
+            isLoading = true;
+            var response = await Http.GetAsync("api/pokemonTypes/" + Id);
+            response.EnsureSuccessStatusCode();
+
+            types = await response.Content.ReadFromJsonAsync<PokemonType[]>();
+            if (types.Length == 0)
+            {
+                types = new PokemonType[] { new PokemonType { typeId = Id } };
+            }
+            isLoading = false;
+        }
+    }
+
+    async Task UpdateAbility()
+    {
+        var response = await Http.PutAsJsonAsync("api/pokemonTypes", types[0]);
+        response.EnsureSuccessStatusCode();
+        isLoading = false;
+    }
+}

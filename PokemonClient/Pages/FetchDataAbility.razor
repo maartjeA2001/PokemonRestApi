@@ -1,0 +1,75 @@
+﻿@page "/fetchAbilityData"
+@inject HttpClient Http
+
+<h1>Ability overview </h1>
+
+<p>A list of all the abilities in the database.</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ability id</th>
+            
+            <th>Ability name</th>
+            
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @if (abilities != null)
+    {
+        @foreach (var ability in abilities)
+        {
+        <tr>
+            <td> @ability.abilityId </td>
+            <td> @ability.abilityName </td>
+            <td><a class="btn btn-secondary btn-sm" href="updateAbility/@ability.abilityId"> Edit </a></td>
+            <td><button type="button" class="btn btn-danger btn-sm" @onclick="@(() => DeleteAbilityData(ability.abilityId))"> Del </button></td>
+        </tr>
+        }
+    }
+    </tbody>
+</table>
+
+@if (isLoading)
+{
+<div class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+}
+else if (abilities.Length == 0)
+{
+    <p>No results</p>
+}
+
+@code {
+    bool isLoading = false;
+
+    private Ability[]? abilities;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchAbilityData();
+    }
+
+    async Task FetchAbilityData()
+    {
+        isLoading = true;
+        var response = await Http.GetAsync("api/abilities");
+        response.EnsureSuccessStatusCode();
+
+        abilities = await response.Content.ReadFromJsonAsync<Ability[]>();
+        isLoading = false;
+    }
+
+    async Task DeleteAbilityData(int Id)
+    {
+        isLoading = true;
+        var response = await Http.DeleteAsync("api/abilities/" + Id);
+        response.EnsureSuccessStatusCode();
+        await FetchAbilityData();
+    }
+}

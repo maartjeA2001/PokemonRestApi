@@ -1,0 +1,66 @@
+﻿@page "/updateAbility/{Id:int?}"
+@inject HttpClient Http
+
+<h1>Update/Add a ability</h1>
+
+<form @onsubmit="FetchAbilityData">
+    <label>Id: <input @bind="Id" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </p>
+</form>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+@if (abilities != null)
+{
+<form @onsubmit="UpdateAbility">
+    <label>Name: <input @bind="abilities[0].abilityName" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </p>
+</form>
+}
+@code {
+        bool isLoading = false;
+    private Ability[] abilities;
+
+    [Parameter]
+    public int Id { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchAbilityData();
+    }
+
+    async Task FetchAbilityData()
+    {
+        if (Id > 0)
+        {
+            isLoading = true;
+            var response = await Http.GetAsync("api/abilities/" + Id);
+            response.EnsureSuccessStatusCode();
+
+            abilities = await response.Content.ReadFromJsonAsync<Ability[]>();
+            if (abilities.Length == 0)
+            {
+                abilities = new Ability[] { new Ability { abilityId = Id } };
+            }
+            isLoading = false;
+        }
+    }
+
+    async Task UpdateAbility()
+    {
+        var response = await Http.PutAsJsonAsync("api/abilities", abilities[0]);
+        response.EnsureSuccessStatusCode();
+        isLoading = false;
+    }
+}
