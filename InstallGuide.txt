@@ -2,7 +2,7 @@ INSTALL .NET SDK
 -Installeer .net 5.0 sdk, link : https://dotnet.microsoft.com/download
 -Clone de repo
 
-IMPORTEREN DB: (voorbeeld phpMyAdmin) 
+IMPORTEREN DB (MYSQL): (voorbeeld phpMyAdmin) 
 -ga naar de phpmyadmin pagina een maak een nieuwe lege database aan (naam 'pokemon')
 -gaan naar het tabje 'importeren'
 -klik op bladeren
