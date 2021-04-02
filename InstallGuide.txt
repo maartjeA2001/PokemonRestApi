@@ -6,7 +6,7 @@ IMPORTEREN DB: (voorbeeld phpMyAdmin)
 -ga naar de phpmyadmin pagina een maak een nieuwe lege database aan (naam 'pokemon')
 -gaan naar het tabje 'importeren'
 -klik op bladeren
--selecteer vervolgens het "pokemon.sql" bestand die in de repo te vinden is.
+-selecteer vervolgens het "pokemon.sql" bestand die in de map 'docs' te vinden is.
 
 SET CONNECTION:
 in het project "PokemonRestApi" ga naar het bestand "appsettings" en verander hierbij de eerste ConnectionString (aka PokemonApiData)
