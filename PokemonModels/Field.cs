@@ -1,4 +1,4 @@
-﻿namespace Pokemon_REST_Api.Models
+﻿namespace PokemonRESTApi.Models
 {
     public enum Field
     {

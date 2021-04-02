@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Pokemon_REST_Api.Models
+namespace PokemonRESTApi.Models
 {
     public class FilterModel
     {
@@ -12,5 +12,6 @@ namespace Pokemon_REST_Api.Models
         public string[] CanHaveAbility { get; set; } = Array.Empty<string>();
         public string[] HasType { get; set; } = Array.Empty<string>();
         public int[] HasId { get; set; } = Array.Empty<int>();
+        public string[] HasName { get; set; } = Array.Empty<string>();
     }
 }

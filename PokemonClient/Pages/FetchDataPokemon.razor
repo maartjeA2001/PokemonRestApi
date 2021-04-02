@@ -7,6 +7,7 @@
 
 <form @onsubmit="FetchPokemonData">
     <p>Filters:</p>
+    <label>Name: <input @bind="pokName" class="form-control" /></label>
     <label>Ability: <input @bind="abilityName" class="form-control" /></label>
     <label>Type: <input @bind="typeName" class="form-control" /></label>
     <label>Limit: <input @bind="limit" type="number" class="form-control" /></label>
@@ -36,8 +37,8 @@
             <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Name"))">Name</button></th>
             @if (showTypes){ <th>Types</th> }
             @if (showAbil){ <th>Abilities</th> }
-            @if (showHeight) { <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Height"))">Height</button></th> }
-            @if (showWeight){ <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Weight"))">Weight</button></th> }
+            @if (showHeight) { <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Height"))">Height (m)</button></th> }
+            @if (showWeight){ <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Weight"))">Weight (kg)</button></th> }
             @if(showStats)
             { 
                 <th><button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Hp"))">Hp</button></th>
@@ -64,8 +65,8 @@
 
             @if (showTypes) { <td>@string.Join(", ", pokemon.pokemonTypeIds.Select(t => typeNames[t]))</td> }
             @if (showAbil) { <td>@string.Join(", ", @pokemon.abilities.Select(a => a.abilityName))</td> }
-            @if (showHeight) { <td>@pokemon.height</td> }
-            @if (showWeight) { <td>@pokemon.weight</td> }
+            @if (showHeight) { <td>@((pokemon.height / 10.0).ToString("F1"))</td> }
+            @if (showWeight) { <td>@((pokemon.weight / 10.0).ToString("F1"))</td> }
             @if (showStats)
             {
                 <td>@pokemon.baseStats.hp</td>
@@ -105,6 +106,7 @@ else if (pokemonResponse.Pokemons.Length == 0)
     bool showAbil = true;
 
     int limit = 10;
+    string pokName = "";
     string abilityName = "";
     string typeName = "";
     bool isLoading = false;
@@ -125,7 +127,8 @@ else if (pokemonResponse.Pokemons.Length == 0)
             Amount = limit,
             CanHaveAbility = string.IsNullOrEmpty(abilityName) ? Array.Empty<string>() : new[] { abilityName },
             HasType = string.IsNullOrEmpty(typeName) ? Array.Empty<string>() : new[] { typeName },
-            Sort = sortOrder
+            Sort = sortOrder,
+            HasName = string.IsNullOrEmpty(pokName) ? Array.Empty<string>() : new[] { pokName }
         }); ; ;
         response.EnsureSuccessStatusCode();
 

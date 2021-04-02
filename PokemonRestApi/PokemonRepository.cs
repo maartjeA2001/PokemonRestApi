@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using MySqlConnector;
-using Pokemon_REST_Api.Models;
+using PokemonRESTApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -224,6 +224,10 @@ namespace PokemonRestApi
                     where a.abil_name in @CanHaveAbility 
                     ) ";
             }
+            if (filter.HasName.Length > 0)
+            {
+                sql += @"and p.pok_name in @HasName ";
+            }
             if (filter.HasType.Length > 0)
             {
                 sql += @"and p.pok_id in (
@@ -243,7 +247,7 @@ namespace PokemonRestApi
                 order by " + GetOrderByColumn(filter.Sort) + @"
                 limit @limit
             ";
-            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasType, limit = filter.Amount <= 0 ? 10 :filter.Amount, Hasid = filter.HasId })).ToArray();
+            return (await conn.QueryAsync<Pokemon>(sql, new { filter.CanHaveAbility, filter.HasName, filter.HasType, limit = filter.Amount <= 0 ? 10 :filter.Amount, Hasid = filter.HasId })).ToArray();
         }
     }
 }

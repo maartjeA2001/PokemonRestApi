@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using MySqlConnector;
-using Pokemon_REST_Api.Models;
+using PokemonRESTApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

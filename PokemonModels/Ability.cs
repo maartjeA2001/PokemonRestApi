@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Pokemon_REST_Api.Models
+namespace PokemonRESTApi.Models
 {
     public class Ability
     {

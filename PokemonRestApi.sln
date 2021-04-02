@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokemonRestApi", "PokemonRe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokemonClient", "PokemonClient\PokemonClient.csproj", "{793B53F8-B8BB-4B84-8506-C778EBBD657E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokemonModels", "PokemonModels\PokemonModels.csproj", "{2E7C2A98-0BF2-4F83-91D0-7132513B5722}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokemonModels", "PokemonModels\PokemonModels.csproj", "{2E7C2A98-0BF2-4F83-91D0-7132513B5722}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
