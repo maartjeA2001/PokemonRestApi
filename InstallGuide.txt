@@ -13,5 +13,5 @@ in het project "PokemonRestApi" ga naar het bestand "appsettings" en verander hi
 naar de juiste database connectie string (user id wachtwoord en wanneer nodig databasenaam) 
 
 RUN PROJECT:
-Gebruik het commando "cd ./PokemonRestApi/PokemonRestApi" om het de current directory te maken
+Gebruik het commando "cd ./project/PokemonRestApi" om het de current directory te maken
 en gebruik daarna het commando 'dotnet run'
