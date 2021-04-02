@@ -1,0 +1,104 @@
+{
+	"pokemon":[
+		{
+			"pokemonId" : 103,
+			"pokemonName": "exeggutor",
+			"height": 20,
+			"weight": 1200,
+			"baseExperience": 182,
+			"baseStats":{
+				"hp":95,
+				"atk":95,
+				"def":85,
+				"spAtk":125,
+				"spDef":65,
+				"speed":55
+			},
+			"abilities":[
+				{
+					"abilityName": "chlorophyll",
+					"isHidden":false
+				},
+				{
+					"abilityName": "harvest",
+					"isHidden":true
+				}
+			],
+			"pokemonTypeIds": [12, 14]
+		},
+		{
+			"pokemonId" : 407,
+			"pokemonName": "roserade",
+			"height": 9,
+			"weight": 145,
+			"baseExperience": 232,
+			"baseStats":{
+				"hp":60,
+				"atk":70,
+				"def":65,
+				"spAtk":125,
+				"spDef":105,
+				"speed":90
+			},
+			"abilities":[
+				{
+					"abilityName": "natural-cure",
+					"isHidden":false
+				},
+				{
+					"abilityName": "poison-point",
+					"isHidden":false
+				},
+				{
+					"abilityName": "technician",
+					"isHidden":true
+				}
+			],
+			"pokemonTypeIds": [12, 4]
+		},
+		{
+			"pokemonId" : 332,
+			"pokemonName": "cacturne",
+			"height": 13,
+			"weight": 774,
+			"baseExperience": 166,
+			"baseStats":{
+				"hp":70,
+				"atk":115,
+				"def":60,
+				"spAtk":115,
+				"spDef":60,
+				"speed":55
+			},
+			"abilities":[
+				{
+					"abilityName": "sand-veil",
+					"isHidden":false
+				},
+				{
+					"abilityName": "water-absorb",
+					"isHidden":true
+				}
+			],
+			"pokemonTypeIds": [12, 17]
+		}
+	],
+	"types":[
+		{
+			"typeId":4,
+			"typeName": "poison"
+		},
+		{
+			"typeId":12,
+			"typeName": "grass"
+		},
+		{
+			"typeId":14,
+			"typeName": "psychic"
+		},
+		{
+			"typeId":17,
+			"typeName": "dark"
+		}
+	]	
+}

@@ -1,0 +1,72 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="pokemons">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="pokemon" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:short" name="pokemonId"/>
+                    <xs:element type="xs:string" name="pokemonName"/>
+                    <xs:element type="xs:byte" name="height"/>
+                    <xs:element type="xs:short" name="weight"/>
+                    <xs:element type="xs:short" name="baseExperience"/>
+                    <xs:element name="baseStats">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:byte" name="hp"/>
+                          <xs:element type="xs:byte" name="atk"/>
+                          <xs:element type="xs:byte" name="def"/>
+                          <xs:element type="xs:byte" name="spAtk"/>
+                          <xs:element type="xs:byte" name="spDef"/>
+                          <xs:element type="xs:byte" name="speed"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="abilities">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="ablity" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="abilitieName"/>
+                                <xs:element type="xs:string" name="isHidden"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="pokemonTypes">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:byte" name="typeId" maxOccurs="unbounded" minOccurs="0"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="types">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="type" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="typeId"/>
+                    <xs:element type="xs:string" name="typeName"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

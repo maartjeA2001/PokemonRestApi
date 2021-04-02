@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "pokemon": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "pokemonId": {
+              "type": "number",
+              "minimum": 1
+            },
+            "pokemonName": {
+              "type": "string"
+            },
+            "height": {
+              "type": "number",
+              "minimum": 1
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 1
+            },
+            "baseExperience": {
+              "type": "number",
+              "minimum": 1
+            },
+            "baseStats": {
+              "type": "object",
+              "properties": {
+                "hp": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 256
+                },
+                "atk": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 256
+                },
+                "def": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 256
+                },
+                "spAtk": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 256
+                },
+                "spDef": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 256
+                },
+                "speed": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 256
+                }
+              },
+              "required": [
+                "hp",
+                "atk",
+                "def",
+                "spAtk",
+                "spDef",
+                "speed"
+              ]
+            },
+            "abilities": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "abilitieName": {
+                      "type": "string"
+                    },
+                    "isHidden": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "abilitieName",
+                    "isHidden"
+                  ]
+                }
+              ]
+            },
+            "pokemonTypeIds": {
+              "type": "array",
+              "items": {
+                  "type": "number",
+                  "minimum": 1
+                }
+            }
+          },
+          "required": [
+            "pokemonId",
+            "pokemonName",
+            "height",
+            "weight",
+            "baseExperience",
+            "baseStats",
+            "abilities",
+            "pokemonTypeIds"
+          ]
+        }
+      ]
+    },
+    "types": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "typeId": {
+              "type": "number",
+              "minimum": 1
+            },
+            "typeName": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "typeId",
+            "typeName"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "pokemon",
+    "types"
+  ]
+}
