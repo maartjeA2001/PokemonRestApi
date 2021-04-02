@@ -1,0 +1,13 @@
+﻿<li class="list-unstyled">
+    <li class="list-group-item d-flex justify-content-between align-items-center clickable" @onclick="_ => isOpen = !isOpen">@Title</li>
+    <ul class="@(isOpen ? "" : "nested")">@ChildContent</ul>
+</li>
+@code {
+    bool isOpen;
+
+    [Parameter]
+    public RenderFragment? Title { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

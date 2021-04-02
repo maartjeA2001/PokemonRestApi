@@ -1,0 +1,165 @@
+﻿@page "/treeView"
+@inject HttpClient Http
+
+<h1>Pokemon Tree View </h1>
+
+<p>A list of all Pokemon based on your filters, click on the table names to sort by specific attributes</p>
+
+<form @onsubmit="FetchPokemonData">
+    <p>Filters:</p>
+    <label>Name: <input @bind="pokName" class="form-control" /></label>
+    <label>Ability: <input @bind="abilityName" class="form-control" /></label>
+    <label>Type: <input @bind="typeName" class="form-control" /></label>
+    <label>Limit: <input @bind="limit" type="number" class="form-control" /></label>
+    <p>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </p>
+</form>
+
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("PokemonId"))">Id</button>
+
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Name"))">Name</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Height"))">Height</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Weight"))">Weight</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Hp"))">Hp</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Atk"))">Atk</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Def"))">Def</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Sp_Atk"))">Sp Atk</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Sp_Def"))">Sp Def</button>
+<button type="button" class="btn btn-light btn-sm" @onclick="@(() => ChangeSortOrder("Spd"))">Speed</button>
+
+
+    @if (pokemonResponse != null)
+    {
+        var typeNames = pokemonResponse.Types.ToDictionary(t => t.typeId, t => t.typeName);
+        <ul class="list-group">
+            @{RenderFragment headTitle = @<div class="title">Pokemon<span class="badge badge-primary badge-pill">@pokemonResponse.Pokemons.Length</span></div> ;}
+            <Expander Title="@headTitle">
+                <ul>
+                    @foreach (Pokemon pokemon in pokemonResponse.Pokemons)
+                    {
+                        RenderFragment titleP = @<div class="title">@pokemon.pokemonName</div>;
+                <Expander Title="@titleP">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        PokedexId: @pokemon.pokemonId
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Height: @((pokemon.height / 10.0).ToString("F1"))
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Weight: @((pokemon.weight / 10.0).ToString("F1"))
+                    </li>
+                    @{RenderFragment titleT = @<div class="title">Types<span class="badge badge-primary badge-pill">@pokemon.pokemonTypeIds.Length</span></div>;}
+                    <Expander Title="@titleT">
+                        <ul>
+                            @foreach (var type in pokemon.pokemonTypeIds)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @typeNames[type]
+                                </li>
+                            }
+                        </ul>
+                    </Expander>
+                    @{RenderFragment titleB = @<div class="title">BaseStats<span class="badge badge-primary badge-pill">6</span></div>;}
+                    <Expander Title="@titleB">
+                        <ul>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">Hp: @pokemon.baseStats.hp</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">Atk: @pokemon.baseStats.atk</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">Def: @pokemon.baseStats.def</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">SpAtk: @pokemon.baseStats.spAtk</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">SpDef: @pokemon.baseStats.spDef</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">Spd: @pokemon.baseStats.speed</li>
+                        </ul>
+                    </Expander>
+                    @{RenderFragment titleA = @<div class="title">Abilities<span class="badge badge-primary badge-pill">@pokemon.abilities.Length</span></div>;}
+                    <Expander Title="@titleA">
+                        <ul>
+                            @foreach (var abiliy in pokemon.abilities)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @abiliy.abilityName
+                                </li>
+                            }
+                        </ul>
+                    </Expander>
+                </Expander>
+                        }
+                    </ul>
+            </Expander>
+        </ul>
+    }
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (pokemonResponse.Pokemons.Length == 0)
+    {
+        <p>No results</p>
+    }
+
+    @code {
+
+        HashSet<int> openIds = new HashSet<int>();
+
+        int limit = 10;
+        string pokName = "";
+        string abilityName = "";
+        string typeName = "";
+        bool isLoading = false;
+
+        private PokemonResponse? pokemonResponse;
+        private SortOrder sortOrder = new SortOrder { };
+
+        protected override async Task OnInitializedAsync()
+        {
+            await FetchPokemonData();
+        }
+
+        async Task FetchPokemonData()
+        {
+            isLoading = true;
+            var response = await Http.PostAsJsonAsync("api/pokemon", new FilterModel
+            {
+                Amount = limit,
+                CanHaveAbility = string.IsNullOrEmpty(abilityName) ? Array.Empty<string>() : new[] { abilityName },
+                HasType = string.IsNullOrEmpty(typeName) ? Array.Empty<string>() : new[] { typeName },
+                Sort = sortOrder,
+                HasName = string.IsNullOrEmpty(pokName) ? Array.Empty<string>() : new[] { pokName }
+            }); ; ;
+            response.EnsureSuccessStatusCode();
+
+            pokemonResponse = await response.Content.ReadFromJsonAsync<PokemonResponse>();
+            isLoading = false;
+        }
+
+        void setOpenOrClose(int id) 
+        {
+            if (isOpen(id))
+                openIds.Remove(id);
+            else
+                openIds.Add(id);
+        }
+
+        bool isOpen(int id) 
+        {
+            return openIds.Contains(id);
+        }
+
+        private async Task ChangeSortOrder(string orderInput)
+        {
+            if (sortOrder.FieldName.ToString().Equals(orderInput))
+                sortOrder.Descending = !sortOrder.Descending;
+            else
+            {
+                sortOrder.FieldName = !Enum.TryParse<Field>(orderInput, out Field name) ? Field.PokemonId : Enum.Parse<Field>(orderInput);
+                sortOrder.Descending = true;
+            }
+
+            await FetchPokemonData();
+        }
+}
+
